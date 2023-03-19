@@ -72,6 +72,14 @@ const Assignment = () => {
       let tempRow = [];
       let tempRow2 = [];
       res2.data.submissions.map((submission) => {
+        axios.get(
+          `http://localhost:5000/assignments/${params.assignmentId}/submissions/${submission.id}/status`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         let sub = {
           name: submission.candidate_name,
           id: submission.id,
@@ -193,6 +201,16 @@ const Assignment = () => {
             }}
           />
         </>
+      )}
+      {kind === "rec" && (
+        <Button
+          variant="contained"
+          onClick={() => {
+            window.location.reload();
+          }}
+        >
+          Refresh
+        </Button>
       )}
       {kind === "rec" && data && !sort && <EnhancedTable data={data} />}
       {kind === "rec" && sortedData && sort && (

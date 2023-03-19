@@ -13,11 +13,11 @@ export default function BasicTable({ data: rows }) {
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell align="right">Submission ID</TableCell>
+            <TableCell>Submission ID</TableCell>
+            <TableCell align="right">Name</TableCell>
+            <TableCell align="right">Grade</TableCell>
             <TableCell align="right">Email</TableCell>
             <TableCell align="right">Submission Time</TableCell>
-            <TableCell align="right">Grade</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -27,12 +27,12 @@ export default function BasicTable({ data: rows }) {
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
               <TableCell component="th" scope="row">
-                {row.name}
+                {row.id}
               </TableCell>
-              <TableCell align="right">{row.id}</TableCell>
+              <TableCell align="right">{row.name}</TableCell>
+              <TableCell align="right">{row.grade}</TableCell>
               <TableCell align="right">{row.email}</TableCell>
               <TableCell align="right">{row.submittedTime}</TableCell>
-              <TableCell align="right">{row.grade}</TableCell>
             </TableRow>
           ))}
         </TableBody>
