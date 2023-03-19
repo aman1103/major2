@@ -162,7 +162,7 @@ const Register = () => {
 
   const handleRedirection = () => {
     navigate({
-      pathname: "/",
+      pathname: "/login",
     });
   };
 

@@ -53,56 +53,6 @@ const Assignment = () => {
       setContent(data.content);
       setDeadline(data.deadline);
       setLoading(false);
-      const res2 = await axios.get(
-        `http://localhost:5000/assignments/${params.assignmentId}/submissions`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const res3 = await axios.get(
-        `http://localhost:5000/assignments/${params.assignmentId}/submissions/sort`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      let tempRow = [];
-      let tempRow2 = [];
-      res2.data.submissions.map((submission) => {
-        axios.get(
-          `http://localhost:5000/assignments/${params.assignmentId}/submissions/${submission.id}/status`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        let sub = {
-          name: submission.candidate_name,
-          id: submission.id,
-          email: submission.candidate_email,
-          grade: submission.grade === null ? 0 : submission.grade,
-          submittedTime: submission.submitted_at,
-        };
-        console.log(submission.grade);
-        tempRow.push(sub);
-      });
-      res3.data.submissions.map((submission) => {
-        let sub = {
-          name: submission.candidate_name,
-          id: submission.id,
-          email: submission.candidate_email,
-          grade: submission.grade === null ? 0 : submission.grade,
-          submittedTime: submission.submitted_at,
-        };
-        console.log(submission.grade);
-        tempRow2.push(sub);
-      });
-      setData(tempRow);
-      setSortedData(tempRow2);
     } catch (e) {
       if (e.response?.status === 401) {
         alert("Session Expired");
@@ -114,8 +64,64 @@ const Assignment = () => {
     }
   };
 
+  const getAssignments = async () => {
+    const res2 = await axios.get(
+      `http://localhost:5000/assignments/${params.assignmentId}/submissions`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    const res3 = await axios.get(
+      `http://localhost:5000/assignments/${params.assignmentId}/submissions/sort`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    let tempRow = [];
+    let tempRow2 = [];
+    res2.data.submissions.map((submission) => {
+      axios.get(
+        `http://localhost:5000/assignments/${params.assignmentId}/submissions/${submission.id}/status`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      let sub = {
+        name: submission.candidate_name,
+        id: submission.id,
+        email: submission.candidate_email,
+        grade: submission.grade === null ? 0 : submission.grade,
+        submittedTime: submission.submitted_at,
+      };
+      console.log(submission.grade);
+      tempRow.push(sub);
+    });
+    res3.data.submissions.map((submission) => {
+      let sub = {
+        name: submission.candidate_name,
+        id: submission.id,
+        email: submission.candidate_email,
+        grade: submission.grade === null ? 0 : submission.grade,
+        submittedTime: submission.submitted_at,
+      };
+      console.log(submission.grade);
+      tempRow2.push(sub);
+    });
+    setData(tempRow);
+    setSortedData(tempRow2);
+  };
+
   useEffect(() => {
     checkUser();
+    if (localStorage.getItem("kind") === "rec") {
+      getAssignments();
+    }
   }, []);
 
   const handleSubmit = async () => {
