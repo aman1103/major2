@@ -7,6 +7,11 @@ import {
   Breadcrumbs,
   Link,
   Checkbox,
+  Dialog,
+  Snackbar,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -22,11 +27,57 @@ const Assignment = () => {
   const [content, setContent] = useState("");
   const [deadline, setDeadline] = useState("");
   const [loading, setLoading] = useState(true);
-  const [file, setFile] = useState();
+  // const [file, setFile] = useState();
+  const [fileLink, setFileLink] = useState("");
   const [submissionId, setSubmissionId] = useState();
   const [data, setData] = useState();
   const [sortedData, setSortedData] = useState();
   const [sort, setSort] = useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [emailNumberX, setEmailNumberX] = useState(0);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [failToastOpen, setFailToastOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleToastClose = () => {
+    setToastOpen(false);
+  };
+
+  const handleFailToastClose = () => {
+    setFailToastOpen(false);
+  };
+
+  const handleEmailSend = async () => {
+    if (emailNumberX <= 0) {
+      return;
+    }
+    setOpen(false);
+    let numberOfEmailsToSend = new FormData();
+    numberOfEmailsToSend.append("x", emailNumberX);
+    console.log(numberOfEmailsToSend);
+    try {
+      // Use = cmd.exe /C start http://localhost:8025 to open this in host comp
+      await axios.post(
+        `http://localhost:5000/assignments/${params.assignmentId}/submissions/email`,
+        numberOfEmailsToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setToastOpen(true);
+    } catch (e) {
+      setFailToastOpen(true);
+      console.log(e);
+    }
+  };
 
   const checkUser = async () => {
     if (!localStorage.getItem("token")) {
@@ -125,13 +176,13 @@ const Assignment = () => {
   }, []);
 
   const handleSubmit = async () => {
-    if (file === undefined) {
+    if (fileLink === "") {
       return;
     }
-    console.log(file);
+    console.log(fileLink);
     const formData = new FormData();
     formData.append("language", language);
-    formData.append("code", file);
+    formData.append("repo", fileLink);
     console.log(formData);
     const res = await axios.post(
       `http://localhost:5000/assignments/${params.assignmentId}/submit`,
@@ -174,7 +225,7 @@ const Assignment = () => {
       <br />
       {kind === "can" && (
         <>
-          <TextField
+          {/* <TextField
             autoFocus
             margin="dense"
             id="name"
@@ -182,6 +233,18 @@ const Assignment = () => {
             variant="standard"
             onChange={(e) => setFile(e.target.files[0])}
             autoComplete="off"
+          /> */}
+          <TextField
+            autoFocus
+            label="Repository Link"
+            margin="dense"
+            id="name"
+            type="text"
+            autoComplete="off"
+            value={fileLink}
+            onChange={(e) => {
+              setFileLink(e.target.value);
+            }}
           />
           <br />
           <Button variant="contained" onClick={handleSubmit}>
@@ -214,14 +277,72 @@ const Assignment = () => {
           onClick={() => {
             window.location.reload();
           }}
+          sx={{ marginRight: "20px" }}
         >
           Refresh
         </Button>
+      )}
+      {kind === "rec" && (
+        <>
+          <Button variant="outlined" onClick={handleClickOpen}>
+            Send Email
+          </Button>
+          <Dialog open={open} onClose={handleClose}>
+            {/* <DialogTitle>Subscribe</DialogTitle> */}
+            <DialogContent>
+              <DialogContentText>
+                Enter the numeber of students that you want to send email to and
+                we will sent the top n amount of students,n being the number of
+                students you want to send the email to
+              </DialogContentText>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="name"
+                label="Number"
+                type="number"
+                fullWidth
+                autoComplete="off"
+                variant="standard"
+                value={emailNumberX}
+                onChange={(e) => {
+                  setEmailNumberX(e.target.value);
+                }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleEmailSend}>Send</Button>
+            </DialogActions>
+          </Dialog>
+        </>
       )}
       {kind === "rec" && data && !sort && <EnhancedTable data={data} />}
       {kind === "rec" && sortedData && sort && (
         <EnhancedTable data={sortedData} />
       )}
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={2000}
+        onClose={handleToastClose}
+      >
+        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+          Email Sent Successfully
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={failToastOpen}
+        autoHideDuration={2000}
+        onClose={handleFailToastClose}
+      >
+        <Alert
+          onClose={handleFailToastClose}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          Failed to send email
+        </Alert>
+      </Snackbar>
     </>
   );
 };
